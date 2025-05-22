@@ -18,6 +18,10 @@ const clientsRouter = require('./routes/clients');
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 
+const salesRouter = require('./routes/sales');
+app.use('/sales', authenticateToken, salesRouter);
+
+
 // Rotas públicas
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
