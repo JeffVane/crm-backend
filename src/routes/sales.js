@@ -1,16 +1,18 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-
 const prisma = new PrismaClient();
+
 const router = express.Router();
 
-// 👉 Listar todas as vendas
+// 👉 Listar todas as vendas do usuário logado
 router.get('/', async (req, res) => {
+  const userId = req.user.userId;
+
   try {
     const sales = await prisma.sale.findMany({
+      where: { userId },
       include: {
         client: true,
-        user: true,
       },
     });
     res.json(sales);
@@ -19,20 +21,23 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 👉 Buscar uma venda específica
+// 👉 Buscar uma venda específica do usuário
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
+  const userId = req.user.userId;
+
   try {
-    const sale = await prisma.sale.findUnique({
-      where: { id },
+    const sale = await prisma.sale.findFirst({
+      where: { id, userId },
       include: {
         client: true,
-        user: true,
       },
     });
+
     if (!sale) {
       return res.status(404).json({ error: 'Venda não encontrada' });
     }
+
     res.json(sale);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -41,7 +46,8 @@ router.get('/:id', async (req, res) => {
 
 // 👉 Criar uma venda
 router.post('/', async (req, res) => {
-  const { clientId, userId, description, value, date } = req.body;
+  const { clientId, description, value, date } = req.body;
+  const userId = req.user.userId;
 
   try {
     const sale = await prisma.sale.create({
@@ -63,17 +69,23 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { description, value, date } = req.body;
+  const userId = req.user.userId;
 
   try {
-    const sale = await prisma.sale.update({
-      where: { id },
+    const sale = await prisma.sale.updateMany({
+      where: { id, userId },
       data: {
         description,
         value,
         date: new Date(date),
       },
     });
-    res.json(sale);
+
+    if (sale.count === 0) {
+      return res.status(404).json({ error: 'Venda não encontrada' });
+    }
+
+    res.json({ message: 'Venda atualizada com sucesso' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -82,11 +94,17 @@ router.put('/:id', async (req, res) => {
 // 👉 Deletar uma venda
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
+  const userId = req.user.userId;
 
   try {
-    await prisma.sale.delete({
-      where: { id },
+    const sale = await prisma.sale.deleteMany({
+      where: { id, userId },
     });
+
+    if (sale.count === 0) {
+      return res.status(404).json({ error: 'Venda não encontrada' });
+    }
+
     res.json({ message: 'Venda deletada com sucesso' });
   } catch (error) {
     res.status(400).json({ error: error.message });
