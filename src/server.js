@@ -17,6 +17,9 @@ const authenticateToken = require('./middleware/auth');
 const clientsRouter = require('./routes/clients');
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
+const notesRouter = require('./routes/notes');
+app.use('/notes', authenticateToken, notesRouter);
+
 
 const salesRouter = require('./routes/sales');
 app.use('/sales', authenticateToken, salesRouter);
