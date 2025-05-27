@@ -1,37 +1,60 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const auth = require('../middleware/auth'); // 🔒 Middleware de autenticação
 
+const prisma = new PrismaClient();
 const router = express.Router();
 
-// 👉 Listar todas as vendas do usuário logado
-router.get('/', async (req, res) => {
-  const userId = req.user.userId;
+/** 👉 Listar vendas com filtros e paginação */
+router.get('/', auth, async (req, res) => {
+  const userId = req.user.id || req.user.userId;
+  const { page = 1, limit = 10, clientId, dateFrom, dateTo } = req.query;
+  const skip = (page - 1) * limit;
 
   try {
-    const sales = await prisma.sale.findMany({
-      where: { userId },
-      include: {
-        client: true,
-      },
+    const where = {
+      userId,
+      ...(clientId && { clientId }),
+      ...(dateFrom && dateTo && {
+        date: {
+          gte: new Date(dateFrom),
+          lte: new Date(dateTo),
+        },
+      }),
+    };
+
+    const [sales, total] = await Promise.all([
+      prisma.sale.findMany({
+        where,
+        skip: Number(skip),
+        take: Number(limit),
+        orderBy: { date: 'desc' },
+        include: { client: true },
+      }),
+      prisma.sale.count({ where }),
+    ]);
+
+    res.json({
+      data: sales,
+      total,
+      page: Number(page),
+      lastPage: Math.ceil(total / limit),
     });
-    res.json(sales);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao buscar vendas' });
   }
 });
 
-// 👉 Buscar uma venda específica do usuário
-router.get('/:id', async (req, res) => {
+/** 👉 Buscar venda específica */
+router.get('/:id', auth, async (req, res) => {
   const { id } = req.params;
-  const userId = req.user.userId;
+  const userId = req.user.id || req.user.userId;
 
   try {
     const sale = await prisma.sale.findFirst({
       where: { id, userId },
-      include: {
-        client: true,
-      },
+      include: { client: true },
     });
 
     if (!sale) {
@@ -44,10 +67,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// 👉 Criar uma venda
-router.post('/', async (req, res) => {
+/** 👉 Criar venda */
+router.post('/', auth, async (req, res) => {
   const { clientId, description, value, date } = req.body;
-  const userId = req.user.userId;
+  const userId = req.user.id || req.user.userId;
 
   try {
     const sale = await prisma.sale.create({
@@ -65,11 +88,11 @@ router.post('/', async (req, res) => {
   }
 });
 
-// 👉 Atualizar uma venda
-router.put('/:id', async (req, res) => {
+/** 👉 Atualizar venda */
+router.put('/:id', auth, async (req, res) => {
   const { id } = req.params;
   const { description, value, date } = req.body;
-  const userId = req.user.userId;
+  const userId = req.user.id || req.user.userId;
 
   try {
     const sale = await prisma.sale.updateMany({
@@ -91,10 +114,10 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// 👉 Deletar uma venda
-router.delete('/:id', async (req, res) => {
+/** 👉 Deletar venda */
+router.delete('/:id', auth, async (req, res) => {
   const { id } = req.params;
-  const userId = req.user.userId;
+  const userId = req.user.id || req.user.userId;
 
   try {
     const sale = await prisma.sale.deleteMany({
