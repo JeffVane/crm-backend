@@ -20,6 +20,10 @@ const authRouter = require('./routes/auth');
 const notesRouter = require('./routes/notes');
 app.use('/notes', authenticateToken, notesRouter);
 
+const reminderRoutes = require('./routes/reminders');
+app.use('/api/reminders', reminderRoutes);
+
+
 
 const salesRouter = require('./routes/sales');
 app.use('/sales', authenticateToken, salesRouter);

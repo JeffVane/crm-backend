@@ -7,30 +7,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String   @id @default(uuid())
-  name          String
-  email         String   @unique
-  password_hash String
-  created_at    DateTime @default(now())
-
-  clients       Client[]
-  sales         Sale[]       // 👈 Adiciona isso
-  notes         Note[]       // 👈 Adiciona isso
-  reminders     Reminder[]   // 👈 E isso
+enum ReminderType {
+  birthday
+  follow_up
+  inactive
 }
 
+model User {
+  id            String     @id @default(uuid())
+  name          String
+  email         String     @unique
+  password_hash String
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+
+  clients       Client[]
+  sales         Sale[]
+  notes         Note[]
+  reminders     Reminder[]
+}
 
 model Client {
-  id         String   @id @default(uuid())
-  user       User     @relation(fields: [userId], references: [id])
+  id         String     @id @default(uuid())
+  user       User       @relation(fields: [userId], references: [id])
   userId     String
   name       String
   phone      String?
   email      String?
   birthday   DateTime?
   notes      String?
-  created_at DateTime @default(now())
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
 
   sales      Sale[]
   notes_list Note[]
@@ -38,35 +45,38 @@ model Client {
 }
 
 model Sale {
-  id          String   @id @default(uuid())
-  client      Client   @relation(fields: [clientId], references: [id])
+  id          String     @id @default(uuid())
+  client      Client     @relation(fields: [clientId], references: [id])
   clientId    String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User       @relation(fields: [userId], references: [id])
   userId      String
   description String?
   value       Float?
   date        DateTime
-  created_at  DateTime @default(now())
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
 }
 
 model Note {
-  id         String   @id @default(uuid())
-  client     Client   @relation(fields: [clientId], references: [id])
+  id         String     @id @default(uuid())
+  client     Client     @relation(fields: [clientId], references: [id])
   clientId   String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
   userId     String
   content    String
-  created_at DateTime @default(now())
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
 }
 
 model Reminder {
-  id         String   @id @default(uuid())
-  client     Client   @relation(fields: [clientId], references: [id])
+  id         String        @id @default(uuid())
+  client     Client        @relation(fields: [clientId], references: [id])
   clientId   String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User          @relation(fields: [userId], references: [id])
   userId     String
-  type       String   // 'birthday' | 'follow_up' | 'inactive'
+  type       ReminderType
   date       DateTime
-  done       Boolean  @default(false)
-  created_at DateTime @default(now())
+  done       Boolean       @default(false)
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
 }
