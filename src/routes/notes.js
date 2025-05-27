@@ -61,7 +61,10 @@ router.put('/:id', async (req, res) => {
 
   try {
     const note = await prisma.note.updateMany({
-      where: { id, userId },
+      where: {
+        id: id, // 🔥 Mantém como string
+        userId
+      },
       data: { content },
     });
 
@@ -74,6 +77,8 @@ router.put('/:id', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
+
 
 // 👉 Deletar nota
 router.delete('/:id', async (req, res) => {
@@ -94,5 +99,6 @@ router.delete('/:id', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
 
 module.exports = router;
