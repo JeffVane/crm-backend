@@ -33,14 +33,14 @@ router.post('/login', async (req, res) => {
   );
 
   res.json({
-  token,
-  user: {
-    id: user.id,
-    name: user.name,
-    email: user.email
-  }
-});
-
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    }
+  });
+}); // 👈 ESSA CHAVE ESTAVA FALTANDO
 
 // 🔐 Cadastro
 router.post('/register', async (req, res) => {
@@ -78,4 +78,3 @@ router.post('/register', async (req, res) => {
 
 // ✅ Exportar no final
 module.exports = router;
-
