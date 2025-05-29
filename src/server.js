@@ -22,6 +22,10 @@ const authRouter = require('./routes/auth');
 const notesRouter = require('./routes/notes');
 app.use('/notes', authenticateToken, notesRouter);
 
+const dashboardRoutes = require('./routes/dashboard');
+app.use('/api/dashboard', dashboardRoutes);
+
+
 const reminderRoutes = require('./routes/reminders');
 app.use('/api/reminders', reminderRoutes);
 

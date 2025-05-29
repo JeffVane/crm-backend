@@ -136,3 +136,30 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 module.exports = router;
+
+/**
+ * @swagger
+ * /api/clients:
+ *   get:
+ *     summary: Lista os clientes do usuário logado
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Página da busca
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Número de itens por página
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Filtro de busca pelo nome do cliente
+ *     responses:
+ *       200:
+ *         description: Lista de clientes retornada com sucesso
+ */

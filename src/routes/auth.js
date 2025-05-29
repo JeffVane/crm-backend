@@ -32,8 +32,15 @@ router.post('/login', async (req, res) => {
     { expiresIn: '8h' }
   );
 
-  res.json({ token });
+  res.json({
+  token,
+  user: {
+    id: user.id,
+    name: user.name,
+    email: user.email
+  }
 });
+
 
 // 🔐 Cadastro
 router.post('/register', async (req, res) => {
@@ -71,3 +78,4 @@ router.post('/register', async (req, res) => {
 
 // ✅ Exportar no final
 module.exports = router;
+
